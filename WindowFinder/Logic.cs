@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace WindowFinder
 {
     public static class Logic
     {
-        static Process thisProcess = Process.GetCurrentProcess();
-        //static Dictionary<string, IntPtr> openedWindows = new Dictionary<string, IntPtr>();
-
         public static List<WindowInfo> OpenedWindows { get; set; }
 
         public static void Initialize()

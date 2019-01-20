@@ -1,29 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace WindowFinder
 {
-    /// <summary>
-    /// Logika interakcji dla klasy MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         const int SW_MAXIMIZE = 3;
@@ -35,7 +24,6 @@ namespace WindowFinder
 
         TaskAwaiter getWindowsAwaiter;
         bool fresh = true;
-        object windowsListLock = new object();
         NotifyIcon notifyIcon = new NotifyIcon();
 
         public MainWindow()
@@ -50,7 +38,7 @@ namespace WindowFinder
             notifyIcon.ContextMenu = new System.Windows.Forms.ContextMenu(new System.Windows.Forms.MenuItem[] 
             { new System.Windows.Forms.MenuItem("Quit", Quit)});
             Activated += OnFocus;
-            GetWindowsAsync();
+            GetWindows();
             CenterWindowOnScreen();
             WindowState = WindowState.Minimized;
         }
@@ -60,7 +48,7 @@ namespace WindowFinder
             this.Show();
             Activate();
             WindowState = WindowState.Normal;
-            GetWindowsAsync();
+            GetWindows();
             SearchBox.Focus();
             SearchBox.SelectAll();
         }
@@ -90,7 +78,6 @@ namespace WindowFinder
                 else
                 {
                     WindowState = WindowState.Minimized;
-                    //active = false;
                 }
             }
             return IntPtr.Zero;
@@ -165,7 +152,7 @@ namespace WindowFinder
             }
         }
 
-        public void GetWindowsAsync()
+        public void GetWindows()
         {
             if (fresh || getWindowsAwaiter.IsCompleted)
             {
