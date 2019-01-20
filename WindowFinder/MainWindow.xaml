@@ -5,8 +5,49 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WindowFinder"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        WindowStyle="None"
+        AllowsTransparency="True"
+        SizeToContent="Height"
+        Title="WindowFinder" Height="436" Width="750"
+        MouseDown="Window_MouseDown" 
+        PreviewKeyDown="OnKeyDown"
+        ShowInTaskbar="False"
+        >
         
+    <Grid Background="#222"  >
+        <TextBox x:Name="SearchBox" Height="26" Margin="0,0,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Background="Black" Foreground="#777" BorderThickness="0" 
+                 FontSize="20" FontFamily="Consolas" 
+                 TextChanged="TextBox_TextChanged"/>
+        <DataGrid Margin="0,31,0,0" Background="#222"  x:Name="WindowsGrid" BorderThickness="0"
+                  AutoGeneratingColumn="OnAutoGeneratingColumn"
+                  GridLinesVisibility="None"
+                  MouseDoubleClick="GridDoubleClick"
+                  >
+            <DataGrid.Resources>
+                <Style BasedOn="{StaticResource {x:Type DataGridColumnHeader}}" TargetType="{x:Type DataGridColumnHeader}">
+                    <Setter Property="Background" Value="#111" />
+                    <Setter Property="BorderThickness" Value="1"/>
+                    <Setter Property="BorderBrush" Value="#111"/>
+                    <Setter Property="Foreground" Value="#888" />
+                </Style>
+                <Style BasedOn="{StaticResource {x:Type DataGridRowHeader}}" TargetType="{x:Type DataGridRowHeader}">
+                    <Setter Property="Background" Value="DarkGray" />
+                    <Setter Property="Foreground" Value="LightGray" />
+                    <Setter Property="BorderThickness" Value="0"/>
+                </Style>
+                <Style BasedOn="{StaticResource {x:Type DataGridRow}}" TargetType="{x:Type DataGridRow}">
+                    <Setter Property="Background" Value="#444" />
+                    <Setter Property="Foreground" Value="LightGray" />
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="FontSize" Value="14"/>
+                    <Style.Triggers>
+                        <Trigger Property="DataGridRow.IsSelected" Value="True">
+                            <Setter Property="Background" Value="#888" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.Resources>
+        </DataGrid>
+
     </Grid>
 </Window>
