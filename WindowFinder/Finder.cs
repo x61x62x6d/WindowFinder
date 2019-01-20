@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WindowFinder
 {
-    public static class Logic
+    public static class Finder
     {
         public static List<WindowInfo> OpenedWindows { get; set; }
 

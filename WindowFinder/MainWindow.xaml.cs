@@ -28,19 +28,26 @@ namespace WindowFinder
 
         public MainWindow()
         {
-            InitializeComponent();
-            var iconStream = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/WindowFinder;component/windowFinder.ico")).Stream;
-            notifyIcon.Icon = new Icon(iconStream);
-            iconStream.Dispose();
-            notifyIcon.Visible = true;
-            Logic.Initialize();
-            notifyIcon.DoubleClick += OnFocus;
-            notifyIcon.ContextMenu = new System.Windows.Forms.ContextMenu(new System.Windows.Forms.MenuItem[] 
-            { new System.Windows.Forms.MenuItem("Quit", Quit)});
-            Activated += OnFocus;
-            GetWindows();
+            InitializeComponent();           
+            Finder.Initialize();
+            InitNotifyIcon();
+            Activated += OnFocus;            
             CenterWindowOnScreen();
             WindowState = WindowState.Minimized;
+            GetWindows();
+        }
+
+        private void InitNotifyIcon()
+        {
+            var iconUri = new Uri("pack://application:,,,/WindowFinder;component/windowFinder.ico");
+            var iconStream = System.Windows.Application.GetResourceStream(iconUri).Stream;
+            notifyIcon.Icon = new Icon(iconStream);            
+            notifyIcon.Visible = true;
+            notifyIcon.DoubleClick += OnFocus;
+            notifyIcon.ContextMenu = new System.Windows.Forms.ContextMenu(new System.Windows.Forms.MenuItem[]
+            { new System.Windows.Forms.MenuItem("Quit", Quit)});
+
+            iconStream.Dispose();
         }
 
         public void OnFocus(object sender, EventArgs e)
@@ -158,7 +165,7 @@ namespace WindowFinder
             {
                 getWindowsAwaiter = Task.Run(() =>
                 {
-                    Logic.GetWindows();
+                    Finder.GetWindows();
 
                 }).GetAwaiter();
                 getWindowsAwaiter.OnCompleted(() =>
@@ -188,7 +195,7 @@ namespace WindowFinder
 
         private void refreshList()
         {
-            WindowsGrid.ItemsSource = new ObservableCollection<WindowInfo>(Logic.OpenedWindows
+            WindowsGrid.ItemsSource = new ObservableCollection<WindowInfo>(Finder.OpenedWindows
                 .Where(x => x.FullString.Contains(SearchBox.Text.ToLower())).ToList());
             WindowsGrid.SelectedIndex = 0;
         }
