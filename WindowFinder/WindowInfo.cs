@@ -4,7 +4,7 @@ namespace WindowFinder
 {
     public class WindowInfo
     {
-        const int MAX_TITLE_LEN = 70;
+        const int MAX_TITLE_LEN = 60;
 
         public string Title { get; private set; }
         public string ProcessName { get; private set; }
@@ -21,7 +21,7 @@ namespace WindowFinder
             ProcessId = processId;
             WindowHandle = handle;
             Handle = $"0x{handle.ToString("x")}";
-            FullString = $"{title.ToLower()} {processName} {processId} {Handle}";
+            FullString = $"{title.ToLower()} {processName.ToLower()} {processId} {Handle}";
         }
     }
 }

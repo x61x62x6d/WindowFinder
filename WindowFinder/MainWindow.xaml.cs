@@ -179,7 +179,10 @@ namespace WindowFinder
         private void BringToFront()
         {
             var selected = (WindowInfo)WindowsGrid.SelectedItem;
+            if (selected == null) return;
+
             var handle = selected.WindowHandle;
+
             if (Win32Wrapper.IsIconic(handle))
             {
                 Win32Wrapper.ShowWindow(handle, SW_MAXIMIZE);
