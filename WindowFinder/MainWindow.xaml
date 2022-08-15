@@ -11,7 +11,6 @@
         Title="WindowFinder" Height="400" Width="620"
         MouseDown="Window_MouseDown" 
         PreviewKeyDown="OnKeyDown"
-        ShowInTaskbar="False"
         >
         
     <Grid Background="#222"  >

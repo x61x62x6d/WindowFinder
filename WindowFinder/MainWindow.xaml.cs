@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,32 +24,44 @@ namespace WindowFinder
         const int WIN_MODIFIER = 8;
         const int VK_ESCAPE = 0x1B;
 
-        TaskAwaiter getWindowsAwaiter;
-        bool fresh = true;
-        NotifyIcon notifyIcon = new NotifyIcon();
+        TaskAwaiter getWindowsAwaiter = Task.CompletedTask.GetAwaiter();
+        NotifyIcon trayIcon = new NotifyIcon();
 
         public MainWindow()
         {
             InitializeComponent();           
             Finder.Initialize();
-            InitNotifyIcon();
-            Activated += OnFocus;            
+            InitTrayIcon();
+            Activated += OnFocus;
+            Closed += OnClosing;
             CenterWindowOnScreen();
-            WindowState = WindowState.Minimized;
-            GetWindows();
+            WindowState = WindowState.Minimized;            
+            this.ShowInTaskbar = false;
+            
+            //HACK: if Hide() is not called the minimized windows is visible in bottom left corner
+            //if Show() is not called earlier hotkey doesn't work
+            this.Show(); 
+            this.Hide();
         }
 
-        private void InitNotifyIcon()
+        private void InitTrayIcon()
         {
             var iconUri = new Uri("pack://application:,,,/WindowFinder;component/windowFinder.ico");
             var iconStream = System.Windows.Application.GetResourceStream(iconUri).Stream;
-            notifyIcon.Icon = new Icon(iconStream);            
-            notifyIcon.Visible = true;
-            notifyIcon.DoubleClick += OnFocus;
-            notifyIcon.ContextMenu = new System.Windows.Forms.ContextMenu(new System.Windows.Forms.MenuItem[]
+            trayIcon.Icon = new Icon(iconStream);            
+            trayIcon.Visible = true;
+            trayIcon.DoubleClick += OnFocus;
+            trayIcon.ContextMenu = new System.Windows.Forms.ContextMenu(new System.Windows.Forms.MenuItem[]
             { new System.Windows.Forms.MenuItem("Quit", Quit)});
 
             iconStream.Dispose();
+        }
+
+
+        public void OnClosing(object sender, EventArgs e)
+        {
+            trayIcon.Visible = false;
+            trayIcon.Dispose();
         }
 
         public void OnFocus(object sender, EventArgs e)
@@ -116,7 +130,7 @@ namespace WindowFinder
             var handle = new WindowInteropHelper(this).Handle;
             HwndSource source = HwndSource.FromHwnd(handle);
             source.AddHook(new HwndSourceHook(WndProc));
-            Win32Wrapper.RegisterHotKey(handle, HOTKEY_ID, WIN_MODIFIER, VK_ESCAPE);
+            User32.RegisterHotKey(handle, HOTKEY_ID, WIN_MODIFIER, VK_ESCAPE);  //shortcut to bring up window - win+esc
         }
 
         private void OnKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -148,6 +162,27 @@ namespace WindowFinder
             }
         }
 
+        //----
+
+        static IntPtr GetSystemTrayHandle()
+        {
+            IntPtr hWndTray = User32.FindWindow("Shell_TrayWnd", null);
+            if (hWndTray != IntPtr.Zero)
+            {
+                hWndTray = User32.FindWindowEx(hWndTray, IntPtr.Zero, "TrayNotifyWnd", null);
+                if (hWndTray != IntPtr.Zero)
+                {
+                    hWndTray = User32.FindWindowEx(hWndTray, IntPtr.Zero, "SysPager", null);
+                    if (hWndTray != IntPtr.Zero)
+                    {
+                        hWndTray = User32.FindWindowEx(hWndTray, IntPtr.Zero, "ToolbarWindow32", null);
+                        return hWndTray;
+                    }
+                }
+            }
+
+            return IntPtr.Zero;
+        }
 
         private void OnAutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
         {
@@ -161,7 +196,7 @@ namespace WindowFinder
 
         public void GetWindows()
         {
-            if (fresh || getWindowsAwaiter.IsCompleted)
+            if ( getWindowsAwaiter.IsCompleted)
             {
                 getWindowsAwaiter = Task.Run(() =>
                 {
@@ -172,7 +207,6 @@ namespace WindowFinder
                 {
                     refreshList();
                 });
-                fresh = false;
             }
         }
 
@@ -183,11 +217,11 @@ namespace WindowFinder
 
             var handle = selected.WindowHandle;
 
-            if (Win32Wrapper.IsIconic(handle))
+            if (User32.IsIconic(handle))
             {
-                Win32Wrapper.ShowWindow(handle, SW_MAXIMIZE);
+                User32.ShowWindow(handle, SW_MAXIMIZE);
             }
-            Win32Wrapper.SetForegroundWindow(handle);
+            User32.SetForegroundWindow(handle);
         }
 
         private void clearTextbox()
